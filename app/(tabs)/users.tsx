@@ -33,7 +33,6 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 
-
 interface RoleData {
   role_id: number;
   role_name: string;
@@ -53,7 +52,7 @@ interface UserDetails {
   u_state: string;
   u_country: string;
   u_organization: string;
-  u_pro_img: string | null; // Changed to allow null
+  u_pro_img: string;
   u_cv: string;
   u_created_at: string;
   role_name: string;
@@ -117,7 +116,6 @@ export default function UsersScreen() {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<{ label: string; value: string }[]>([]);
   const [lastRoleId, setLastRoleId] = useState<number>(1);
-  const [profileImageLoading, setProfileImageLoading] = useState(false); // New state
 
   const [formData, setFormData] = useState<FormData>({
     userId: '',
@@ -155,25 +153,20 @@ export default function UsersScreen() {
   const fetchData = async () => {
     try {
       const baseUrl = Platform.select({
-        web: 'http://demo-expense.geomaticxevs.in/ET-api',
-        default: 'http://demo-expense.geomaticxevs.in/ET-api',
+        web: 'http://localhost:80',
+        default: 'http://192.168.1.148:80',
       });
 
-      const response = await fetch(
-        `http://demo-expense.geomaticxevs.in/ET-api/user_roles.php`,
-        {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            Origin:
-              Platform.OS === 'web'
-                ? window.location.origin
-                : 'http://demo-expense.geomaticxevs.in/ET-api',
-          },
-          credentials: 'same-origin',
-        }
-      );
+      const response = await fetch(`http://localhost/user_roles.php`, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Origin:
+            Platform.OS === 'web' ? window.location.origin : 'http://localhost',
+        },
+        credentials: 'same-origin',
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -256,7 +249,7 @@ export default function UsersScreen() {
   const fetchData1 = async () => {
     try {
       // Use a fixed base URL
-      const baseUrl = 'http://demo-expense.geomaticxevs.in/ET-api';
+      const baseUrl = 'http://localhost';
 
       const response = await fetch(`${baseUrl}/user_details.php`, {
         method: 'POST',
@@ -375,19 +368,16 @@ export default function UsersScreen() {
 
   const confirmDelete = async () => {
     if (!selectedUser) return;
-
+  
     try {
-      const response = await fetch(
-        `http://demo-expense.geomaticxevs.in/ET-api/user_delete.php/${selectedUser}`,
-        {
-          method: 'DELETE',
-        }
-      );
-
+      const response = await fetch(`http://localhost/user_delete.php/${selectedUser}`, {
+        method: 'DELETE',
+      });
+  
       if (!response.ok) {
         throw new Error('Failed to delete user');
       }
-
+  
       console.log('User deleted successfully');
       // Optionally update the UI (e.g., refresh user list)
     } catch (error) {
@@ -399,37 +389,68 @@ export default function UsersScreen() {
       setSelectedUser(null);
     }
   };
+  
 
-  const handleViewProfile = async (user: UserDetails) => {
-    setProfileImageLoading(true);
-    try {
-      const response = await fetch(
-        `http://demo-expense.geomaticxevs.in/ET-api/profile_image_handler.php?user_id=${user.u_id}`
-      );
-      if (!response.ok) {
-        throw new Error('Failed to fetch profile image');
-      }
-      const data = await response.json();
-      if (data.u_pro_img && data.u_pro_img !== "") {
-        setEditedUser({ ...user, u_pro_img: data.u_pro_img });
-      } else {
-        // Set to null if response is null or empty string
-        setEditedUser({ ...user, u_pro_img: null });
-      }
-    } catch (error) {
-      console.error('Error fetching profile image:', error);
-      // Set to null in case of error
-      setEditedUser({ ...user, u_pro_img: null });
-    }
-     finally {
-      setProfileImageLoading(false);
-      setShowUserProfile(true);
-    }
+  const handleViewProfile = (user: UserDetails) => {
+    setEditedUser(user);
+    setShowUserProfile(true);
   };
 
-  const handleSave = async () => {
+  const  handleSave = async(userId: string) => {
     // Here you would typically make an API call to update the user
     console.log('Saving user:', editedUser);
+    const baseUrl = Platform.select({
+      web: 'http://localhost',
+      default: 'http://192.168.1.148:80',
+    });
+    try {
+      // Prepare the data to send
+      const userData = {
+        user_id: editedUser?.u_id,
+        first_name: editedUser?.u_fname,
+        middle_name: editedUser?.u_mname,
+        last_name: editedUser?.u_lname,
+        email: editedUser?.u_email,
+        mobile: editedUser?.u_mob,
+        city: editedUser?.u_city,
+        state: editedUser?.u_state,
+        country: editedUser?.u_country,
+        organization: editedUser?.u_organization,
+        profile_image: editedUser?.u_pro_img,
+        cv: editedUser?.u_cv
+      };
+      console.log('User Data to Send:', userData);
+  
+      const response = await fetch(`${baseUrl}/user_save.php/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
+      const result = await response.json();
+      console.log('Server Response:', result);
+  
+      if (result.success) {
+        alert('User updated successfully!');
+        setShowAddUser(false);
+        setSelectedRole(null);
+        setItems([]);
+        fetchData1();
+      } else {
+        alert(`Error: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+      alert('Something went wrong while updating the user. Please try again!');
+    }
+    
 
     resetForm();
     setIsEditing(false);
@@ -443,8 +464,8 @@ export default function UsersScreen() {
   };
   const handleSubmitUser = async () => {
     const baseUrl = Platform.select({
-      web: 'http://demo-expense.geomaticxevs.in/ET-api',
-      default: 'http://demo-expense.geomaticxevs.in/ET-api',
+      web: 'http://localhost',
+      default: 'http://192.168.1.148:80',
     });
     try {
       // Prepare the data to send
@@ -460,7 +481,7 @@ export default function UsersScreen() {
         state: formData.state,
         country: formData.country,
         zip_code: formData.zipCode,
-        role_name: formData.role_name,
+        role_name: selectedRole,
         street_address: formData.streetAddress,
         organization: formData.organization,
         password: formData.password,
@@ -469,25 +490,25 @@ export default function UsersScreen() {
         active: formData.active ? 1 : 0,
         is_deleted: formData.isDeleted ? 1 : 0,
         created_at: formData.created_at,
-        updated_at: formData.updated_at,
+        updated_at: formData.updated_at
       };
-
+  
+      console.log('User Data to Send:', userData);  
       const response = await fetch(`${baseUrl}/user_form.php`, {
         method: 'POST',
         headers: {
-          Accept: 'application/json',
+          'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(userData),
       });
-
+  
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-
+  
       const result = await response.json();
       console.log('Server Response:', result);
-
       if (result.success) {
         alert('User added successfully!');
         setShowAddUser(false);
@@ -501,10 +522,11 @@ export default function UsersScreen() {
       console.error('Error submitting user:', error);
       alert('Something went wrong while adding the user. Please try again!');
     }
-
+  
     resetForm();
   };
 
+  
   const handleSubmitUserRole = async () => {
     const roleDataToSend = {
       role_id: formRoleData.role_id,
@@ -517,19 +539,16 @@ export default function UsersScreen() {
     console.log('Submitting Role Data:', roleDataToSend);
 
     const baseUrl = Platform.select({
-      web: 'http://demo-expense.geomaticxevs.in/ET-api',
-      default: 'http://demo-expense.geomaticxevs.in/ET-api',
+      web: 'http://localhost',
+      default: 'http://192.168.1.148',
     });
 
     try {
-      const response = await fetch(
-        `http://demo-expense.geomaticxevs.in/ET-api/role_form.php`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(roleDataToSend),
-        }
-      );
+      const response = await fetch(`http://localhost/role_form.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(roleDataToSend),
+      });
 
       const result = await response.json();
       if (result.success) {
@@ -696,16 +715,13 @@ export default function UsersScreen() {
         aspect: [1, 1],
         quality: 1,
       });
-
+    
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
-        setEditedUser(
-          (prevUser) =>
-            ({
-              ...prevUser,
-              u_pro_img: imageUri,
-            } as UserDetails)
-        );
+        setEditedUser((prevUser) => ({
+          ...prevUser,
+          u_pro_img: imageUri,
+        }) as UserDetails);
       }
     };
     const handleCVUpload = async () => {
@@ -715,18 +731,16 @@ export default function UsersScreen() {
         });
 
         if (result.assets && result.assets.length > 0) {
-          setEditedUser(
-            (prev) =>
-              ({
-                ...prev,
-                cv: result.assets[0].uri || '', // Ensures a string is assigned
-              } as UserDetails)
-          );
+          setEditedUser((prev) => ({
+            ...prev,
+            cv: result.assets[0].uri || '', // Ensures a string is assigned
+          })as UserDetails);
         }
       } catch (error) {
         console.error('Error picking document:', error);
       }
     };
+    
 
     return (
       <Modal visible={showUserProfile} animationType="slide">
@@ -746,7 +760,7 @@ export default function UsersScreen() {
             </Text>
             <TouchableOpacity
               style={styles.editButton}
-              onPress={() => (isEditing ? handleSave() : setIsEditing(true))}
+              onPress={() => (isEditing ? handleSave(editedUser.u_id) : setIsEditing(true))}
             >
               {isEditing ? (
                 <Check size={20} color="#ffffff" />
@@ -783,10 +797,7 @@ export default function UsersScreen() {
                     style={styles.profileImage}
                   />
                   {isEditing && (
-                    <TouchableOpacity
-                      style={styles.uploadButton}
-                      onPress={handleImagePick}
-                    >
+                    <TouchableOpacity style={styles.uploadButton} onPress={handleImagePick}>
                       <Upload size={20} color="#ffffff" />
                       <Text style={styles.uploadButtonText}>Update Photo</Text>
                     </TouchableOpacity>
@@ -804,7 +815,7 @@ export default function UsersScreen() {
                   </View>
 
                   {/* Status Badge */}
-                  {/* <View
+                  <View
                     style={[
                       styles.statusBadge,
                       editedUser.user_status === 'ACTIVE'
@@ -819,8 +830,9 @@ export default function UsersScreen() {
                           ? styles.statusTextActive
                           : styles.statusTextInactive,
                       ]}
-                    ></Text>
-                  </View> */}
+                    >
+                    </Text>
+                  </View>
                 </View>
               </View>
 
@@ -1018,15 +1030,15 @@ export default function UsersScreen() {
                     )}
                     {isEditing && (
                       <TouchableOpacity
-                        style={styles.uploadDocumentButton}
-                        onPress={handleCVUpload}
-                      >
+                      style={styles.uploadDocumentButton}
+                      onPress={handleCVUpload}>
                         <Upload size={16} color="#6366f1" />
                         <Text style={styles.uploadDocumentText}>
                           {editedUser.u_cv ? 'Update CV' : 'Upload CV'}
                         </Text>
                       </TouchableOpacity>
                     )}
+                    
                   </View>
                 </View>
 
@@ -1183,7 +1195,7 @@ export default function UsersScreen() {
         aspect: [1, 1],
         quality: 1,
       });
-
+    
       if (!result.canceled) {
         const imageUri1 = result.assets[0].uri;
         setImageUri(imageUri1);
@@ -1193,6 +1205,7 @@ export default function UsersScreen() {
         }));
       }
     };
+    
 
     const handleCVUpload = async () => {
       try {
@@ -1234,21 +1247,24 @@ export default function UsersScreen() {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Profile Details</Text>
 
+
               <TouchableOpacity
-                style={styles.uploadContainer}
-                onPress={handleImagePick}
-              >
-                {imageUri && (
-                  <Image
-                    source={{ uri: imageUri }}
-                    style={styles.previewImage}
-                  />
-                )}
-                <View style={styles.uploadCircle}>
-                  <Upload size={24} color="#6366f1" />
-                </View>
-                <Text style={styles.uploadText}>Upload Profile Image</Text>
-              </TouchableOpacity>
+      style={styles.uploadContainer}
+      onPress={handleImagePick}
+    >
+      {imageUri && (
+        <Image
+          source={{ uri: imageUri }}
+          style={styles.previewImage}
+        />
+      )}
+      <View style={styles.uploadCircle}>
+        <Upload size={24} color="#6366f1" />
+      </View>
+      <Text style={styles.uploadText}>Upload Profile Image</Text>
+
+      
+    </TouchableOpacity>
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>User ID</Text>
                 <TextInput
