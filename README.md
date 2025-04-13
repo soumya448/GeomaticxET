@@ -29,8 +29,7 @@ Run the following commands in your terminal:
 npm install
 
 # Install required packages
-npm install react react-dom
-npm install @react-native-picker/picker@2.9.0 expo@~52.0.38 expo-constants@~17.0.8 expo-font@~13.0.4 expo-router@~4.0.19 expo-splash-screen@~0.29.22 react-native@0.76.7 react-native-gesture-handler@~2.20.2 react-native-screens@~4.4.0 react-native-svg@15.8.0
+npm install @react-native-async-storage/async-storage@1.23.1 expo@~52.0.42 expo-location@~18.0.10 expo-router@~4.0.20 expo-system-ui@~4.0.9 react-native@0.76.9 react-native-maps@1.18.0
 
 # Start the application
 npx expo start
