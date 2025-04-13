@@ -28,6 +28,9 @@ Run the following commands in your terminal:
 # Install dependencies
 npm install
 
+#change directory
+cd GeomaticxET
+
 # Install required packages
 npm install @react-native-async-storage/async-storage@1.23.1 expo@~52.0.42 expo-location@~18.0.10 expo-router@~4.0.20 expo-system-ui@~4.0.9 react-native@0.76.9 react-native-maps@1.18.0
 
