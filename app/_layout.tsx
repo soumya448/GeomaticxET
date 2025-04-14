@@ -40,6 +40,7 @@ type RootStackParamList = {
   'manage-leaves': undefined;
   'my-requisitions': undefined;
   allexpense: undefined;
+  'manage-expense': undefined;
 };
 
 interface MenuSection {
@@ -88,7 +89,8 @@ const CustomDrawerContent = () => {
       items: [
         { label: 'Add Expenses', route: 'expenseform' },
         { label: 'My Expenses', route: 'expensedetails' },
-        { label: 'All Expenses', route: 'allexpense', requiresManager: true }
+        { label: 'All Expenses', route: 'allexpense', requiresManager: true },
+        { label: 'Manage Expenses', route: 'manage-expense', requiresManager: true }
       ]
     },
     {
