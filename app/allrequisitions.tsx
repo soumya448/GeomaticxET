@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Modal,
   Dimensions,
+  ScrollView,
 } from "react-native";
 import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react-native";
 import { Picker } from "@react-native-picker/picker";
@@ -37,6 +38,10 @@ interface ApiRequisitionResponse {
   requisition_created_at: string;
   requisition_updated_at: string;
   created_by_full_name: string;
+  submitted_to_full_name: string | null;
+  approved_rejected_by_full_name: string | null;
+  requisition_req_amount: number;
+  requisition_app_amount: number;
 }
 
 // Interface for our transformed requisition data
@@ -49,7 +54,172 @@ interface Requisition {
   requisition_date: string;
   requisition_status: RequisitionStatus;
   requisition_comment: string;
+  submitted_to: string | null;
+  approved_by: string | null;
+  requested_amount: number;
+  approved_amount: number;
 }
+
+// Add this before the RequisitionDetailsModal component
+const getStatusColor = (status: RequisitionStatus) => {
+  switch (status) {
+    case "Approved":
+      return "#10b981";
+    case "Pending":
+      return "#f59e0b";
+    case "Rejected":
+      return "#ef4444";
+    case "Suspended":
+      return "#8b5cf6";
+    case "Unattended":
+      return "#64748b";
+    case "Partially Approved":
+      return "#fbbf24";
+    default:
+      return "#64748b";
+  }
+};
+
+const RequisitionDetailsModal = ({
+  requisition,
+  visible,
+  onClose,
+}: {
+  requisition: Requisition | null;
+  visible: boolean;
+  onClose: () => void;
+}) => {
+  if (!requisition) return null;
+
+  return (
+    <Modal visible={visible} transparent={true} animationType="slide">
+      <View style={styles.detailsModalContainer}>
+        <View style={styles.detailsModalContent}>
+          <TouchableOpacity style={styles.backButton} onPress={onClose}>
+            <Text style={styles.backButtonText}>← Back</Text>
+          </TouchableOpacity>
+
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={styles.detailsCard}>
+              <View style={styles.detailsHeader}>
+                <View style={styles.detailsHeaderLeft}>
+                  <Text style={styles.detailsEmployeeName}>
+                    {requisition.employee}
+                  </Text>
+                  <Text style={styles.detailsId}>
+                    ID: {requisition.requisition_id}
+                  </Text>
+                </View>
+                <View
+                  style={[
+                    styles.detailsStatusBadge,
+                    {
+                      backgroundColor: getStatusColor(
+                        requisition.requisition_status
+                      ),
+                    },
+                  ]}
+                >
+                  <Text style={styles.detailsStatusText}>
+                    {requisition.requisition_status}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.detailsDivider} />
+
+              <View style={styles.detailsSection}>
+                <Text style={styles.detailsLabel}>Title</Text>
+                <Text style={styles.detailsValue}>
+                  {requisition.requisition_title}
+                </Text>
+              </View>
+
+              <View style={styles.detailsAmountSection}>
+                <Text style={styles.detailsLabel}>Requested Amount</Text>
+                <Text style={styles.detailsAmount}>
+                  ₹{requisition.requested_amount.toFixed(2)}
+                </Text>
+              </View>
+
+              {requisition.requisition_status !== "Pending" && (
+                <View style={styles.detailsAmountSection}>
+                  <Text style={styles.detailsLabel}>Approved Amount</Text>
+                  <Text
+                    style={[
+                      styles.detailsAmount,
+                      {
+                        color:
+                          requisition.approved_amount > 0
+                            ? "#10b981"
+                            : "#64748b",
+                      },
+                    ]}
+                  >
+                    ₹{requisition.approved_amount.toFixed(2)}
+                  </Text>
+                </View>
+              )}
+
+              <View style={styles.detailsRow}>
+                <View style={[styles.detailsSection, styles.detailsHalf]}>
+                  <Text style={styles.detailsLabel}>Type</Text>
+                  <View style={styles.detailsTypeContainer}>
+                    <Text style={styles.detailsValue}>
+                      {requisition.requisition_type}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={[styles.detailsSection, styles.detailsHalf]}>
+                  <Text style={styles.detailsLabel}>Date</Text>
+                  <Text style={styles.detailsValue}>
+                    {requisition.requisition_date}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.detailsDivider} />
+
+              <View style={styles.detailsSection}>
+                <Text style={styles.detailsLabel}>Submitted To</Text>
+                <Text style={styles.detailsValue}>
+                  {requisition.submitted_to || "Not submitted yet"}
+                </Text>
+              </View>
+
+              <View style={styles.detailsSection}>
+                <Text style={styles.detailsLabel}>
+                  {requisition.requisition_status === "Approved"
+                    ? "Approved By"
+                    : requisition.requisition_status === "Rejected"
+                    ? "Rejected By"
+                    : "Pending Approval From"}
+                </Text>
+                <Text style={styles.detailsValue}>
+                  {requisition.approved_by || "Not processed yet"}
+                </Text>
+              </View>
+
+              <View style={styles.detailsDivider} />
+
+              {requisition.requisition_comment && (
+                <View style={styles.detailsRemarksSection}>
+                  <Text style={styles.detailsLabel}>Comments</Text>
+                  <View style={styles.detailsRemarksContainer}>
+                    <Text style={styles.detailsRemarks}>
+                      {requisition.requisition_comment}
+                    </Text>
+                  </View>
+                </View>
+              )}
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+};
 
 export default function AllRequisitions() {
   const [refreshing, setRefreshing] = useState(false);
@@ -63,6 +233,9 @@ export default function AllRequisitions() {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false); // State to toggle dropdown visibility
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [selectedRequisition, setSelectedRequisition] =
+    useState<Requisition | null>(null);
+  const [showRequisitionDetails, setShowRequisitionDetails] = useState(false);
 
   // Helper function to format date
   const formatDate = useCallback((dateString: string): string => {
@@ -121,6 +294,10 @@ export default function AllRequisitions() {
         requisition_date: formatDate(item.requisition_date),
         requisition_status: getStatus(item.requisition_status),
         requisition_comment: item.requisition_comment || "No comments",
+        submitted_to: item.submitted_to_full_name,
+        approved_by: item.approved_rejected_by_full_name,
+        requested_amount: item.requisition_req_amount,
+        approved_amount: item.requisition_app_amount,
       }));
     },
     [formatDate, getRequisitionType, getStatus]
@@ -213,28 +390,15 @@ export default function AllRequisitions() {
     setCurrentPage(1); // Reset to first page when filters change
   }, [filteredRequisitions]);
 
-  const getStatusColor = useCallback((status: RequisitionStatus) => {
-    switch (status) {
-      case "Approved":
-        return "#10b981";
-      case "Pending":
-        return "#f59e0b";
-      case "Rejected":
-        return "#ef4444";
-      case "Suspended":
-        return "#8b5cf6";
-      case "Unattended":
-        return "#64748b";
-      case "Partially Approved":
-        return "#fbbf24"; // Yellow for partially approved
-      default:
-        return "#64748b";
-    }
-  }, []);
-
   const renderRequisitionItem = useCallback(
     ({ item }: { item: Requisition }) => (
-      <View style={styles.requisitionCard}>
+      <TouchableOpacity
+        style={styles.requisitionCard}
+        onPress={() => {
+          setSelectedRequisition(item);
+          setShowRequisitionDetails(true);
+        }}
+      >
         <View style={styles.requisitionHeader}>
           <Text style={styles.employeeName}>{item.employee}</Text>
           <View
@@ -251,9 +415,9 @@ export default function AllRequisitions() {
           <Text style={styles.dates}>{item.requisition_date}</Text>
         </View>
         <Text style={styles.comment}>Comment: {item.requisition_comment}</Text>
-      </View>
+      </TouchableOpacity>
     ),
-    [getStatusColor]
+    []
   );
 
   const handleFilterSelect = (status: typeof selectedStatus) => {
@@ -417,6 +581,14 @@ export default function AllRequisitions() {
         }
       />
       <PaginationControls />
+      <RequisitionDetailsModal
+        requisition={selectedRequisition}
+        visible={showRequisitionDetails}
+        onClose={() => {
+          setShowRequisitionDetails(false);
+          setSelectedRequisition(null);
+        }}
+      />
     </View>
   );
 }
@@ -630,5 +802,123 @@ const styles = StyleSheet.create({
   paginationText: {
     fontSize: 16,
     color: "#1E293B",
+  },
+  detailsModalContainer: {
+    flex: 1,
+    backgroundColor: "#f1f5f9",
+  },
+  detailsModalContent: {
+    flex: 1,
+    padding: 16,
+  },
+  detailsCard: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  backButton: {
+    paddingVertical: 12,
+    marginBottom: 16,
+  },
+  backButtonText: {
+    fontSize: 18,
+    color: "#6366f1",
+    fontWeight: "600",
+  },
+  detailsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 20,
+  },
+  detailsHeaderLeft: {
+    flex: 1,
+  },
+  detailsEmployeeName: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#1e293b",
+    marginBottom: 4,
+  },
+  detailsId: {
+    fontSize: 14,
+    color: "#64748b",
+  },
+  detailsStatusBadge: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginLeft: 12,
+  },
+  detailsStatusText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  detailsDivider: {
+    height: 1,
+    backgroundColor: "#e2e8f0",
+    marginVertical: 16,
+  },
+  detailsSection: {
+    marginBottom: 20,
+  },
+  detailsLabel: {
+    fontSize: 14,
+    color: "#64748b",
+    marginBottom: 8,
+    fontWeight: "500",
+  },
+  detailsValue: {
+    fontSize: 16,
+    color: "#1e293b",
+    fontWeight: "500",
+  },
+  detailsTypeContainer: {
+    backgroundColor: "#f1f5f9",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignSelf: "flex-start",
+  },
+  detailsRemarksSection: {
+    marginTop: 8,
+  },
+  detailsRemarksContainer: {
+    backgroundColor: "#f8fafc",
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  detailsRemarks: {
+    fontSize: 16,
+    color: "#475569",
+    lineHeight: 24,
+  },
+  detailsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 16,
+    marginBottom: 20,
+  },
+  detailsHalf: {
+    flex: 1,
+  },
+  detailsAmountSection: {
+    marginBottom: 20,
+    backgroundColor: "#f8fafc",
+    padding: 16,
+    borderRadius: 12,
+  },
+  detailsAmount: {
+    fontSize: 28,
+    color: "#10b981",
+    fontWeight: "700",
   },
 });
