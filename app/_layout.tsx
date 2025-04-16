@@ -64,7 +64,7 @@ const CustomDrawerContent = () => {
   const menuSections: MenuSection[] = [
     {
       key: 'attendance',
-      title: 'Manage Attendance',
+      title: 'Attendance',
       icon: <Calendar size={25} color="#1f2937" style={styles.icon} />,
       items: [
         { label: 'My Attendance', route: 'attendance' },
@@ -73,7 +73,7 @@ const CustomDrawerContent = () => {
     },
     {
       key: 'leave',
-      title: 'Manage Leave',
+      title: 'Leaves',
       icon: <FileText size={25} color="#1f2937" style={styles.icon} />,
       items: [
         { label: 'Add Leave', route: 'apply-leave' },
@@ -84,7 +84,7 @@ const CustomDrawerContent = () => {
     },
     {
       key: 'expenses',
-      title: 'My Expenses',
+      title: 'Expenses',
       icon: <DollarSign size={25} color="#1f2937" style={styles.icon} />,
       items: [
         { label: 'Add Expenses', route: 'expenseform' },
