@@ -36,7 +36,7 @@ export default function MyExpenses() {
       }
 
       try {
-        const response = await fetch(`http://demo-expense.geomaticxevs.in/ET-api/my-expenses.php?userId=${userId}`, {
+        const response = await fetch(`https://demo-expense.geomaticxevs.in/ET-api/my-expenses.php?userId=${userId}`, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',

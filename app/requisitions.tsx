@@ -56,7 +56,7 @@ export default function Requisitions() {
     const fetchRequisitions = async () => {
       try {
         const response = await fetch(
-          'http://demo-expense.geomaticxevs.in/ET-api/manage_requisitions.php'
+          'https://demo-expense.geomaticxevs.in/ET-api/manage_requisitions.php'
         );
         const data: ApiResponse = await response.json();
 
@@ -105,7 +105,7 @@ export default function Requisitions() {
       const apiAction = action === 'partial' ? 'approve' : action;
 
       const response = await fetch(
-        'http://demo-expense.geomaticxevs.in/ET-api/approve_reject_requisitions.php',
+        'https://demo-expense.geomaticxevs.in/ET-api/approve_reject_requisitions.php',
         {
           method: 'POST',
           headers: {

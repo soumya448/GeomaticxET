@@ -48,7 +48,7 @@ export default function MyRequisitions() {
         return;
       }
 
-      const response = await fetch('http://demo-expense.geomaticxevs.in/ET-api/my-requisitions.php', {
+      const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/my-requisitions.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

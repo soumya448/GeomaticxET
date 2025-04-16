@@ -133,7 +133,7 @@ export default function AllRequisitions() {
       setError(null);
 
       const response = await fetch(
-        "http://demo-expense.geomaticxevs.in/ET-api/all-requisition.php",
+        "https://demo-expense.geomaticxevs.in/ET-api/all-requisition.php",
         {
           headers: {
             Accept: "application/json",

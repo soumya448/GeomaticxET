@@ -19,7 +19,7 @@ import CalendarPicker from 'react-native-calendar-picker';
 import { format } from 'date-fns';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const API_URL = 'http://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php';
+const API_URL = 'https://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php';
 
 interface AttendanceData {
   date: string;

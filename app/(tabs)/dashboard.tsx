@@ -353,7 +353,7 @@ export default function Dashboard() {
   const checkTodaysAttendance = async (userId: string) => {
     try {
       setCheckingAttendance(true);
-      const response = await fetch('http://demo-expense.geomaticxevs.in/ET-api/check_login.php', {
+      const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/check_login.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -383,7 +383,7 @@ export default function Dashboard() {
         return;
       }
 
-      const response = await fetch('http://demo-expense.geomaticxevs.in/ET-api/dashboard.php', {
+      const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/dashboard.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -396,7 +396,7 @@ export default function Dashboard() {
 
       if (result.status === 'success') {
         const roleResponse = await fetch(
-          'http://demo-expense.geomaticxevs.in/ET-api/user_role_fetcher.php',
+          'https://demo-expense.geomaticxevs.in/ET-api/user_role_fetcher.php',
           {
             method: 'POST',
             headers: {
@@ -428,7 +428,7 @@ export default function Dashboard() {
 
   const fetchUserCount = useCallback(async () => {
     try {
-      const response = await fetch('http://demo-expense.geomaticxevs.in/ET-api/user_count.php');
+      const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/user_count.php');
       const result = await response.json();
       setUserCount(result.user_count);
     } catch (error) {
@@ -515,7 +515,7 @@ export default function Dashboard() {
       };
 
       const response = await fetch(
-        'http://demo-expense.geomaticxevs.in/ET-api/user_attendance_login.php',
+        'https://demo-expense.geomaticxevs.in/ET-api/user_attendance_login.php',
         {
           method: 'POST',
           headers: {
@@ -562,7 +562,7 @@ export default function Dashboard() {
       };
 
       const response = await fetch(
-        'http://demo-expense.geomaticxevs.in/ET-api/user_attendance_logout.php',
+        'https://demo-expense.geomaticxevs.in/ET-api/user_attendance_logout.php',
         {
           method: 'POST',
           headers: {

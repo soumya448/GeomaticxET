@@ -73,7 +73,7 @@ export default function ManageExpenses() {
     const fetchExpenses = async () => {
       try {
         const response = await fetch(
-          "http://demo-expense.geomaticxevs.in/ET-api/manage_expense.php"
+          "https://demo-expense.geomaticxevs.in/ET-api/manage_expense.php"
         );
         const data = await response.json();
 
@@ -125,7 +125,7 @@ export default function ManageExpenses() {
       console.log(`User ID: ${userId}`);
 
       const response = await fetch(
-        "http://demo-expense.geomaticxevs.in/ET-api/approve_reject_expense.php",
+        "https://demo-expense.geomaticxevs.in/ET-api/approve_reject_expense.php",
         {
           method: "POST",
           headers: {

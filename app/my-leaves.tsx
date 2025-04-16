@@ -38,7 +38,7 @@ export default function MyLeaves() {
     
       try {
         console.log('User ID223:', userid);
-        const response = await fetch(`http://demo-expense.geomaticxevs.in/ET-api/my-leaves.php?userId=${userid}`, {
+        const response = await fetch(`https://demo-expense.geomaticxevs.in/ET-api/my-leaves.php?userId=${userid}`, {
           method: 'GET',
           credentials: 'include',
           headers: {

@@ -124,8 +124,8 @@ export default function UserAttendanceScreen() {
   ) => {
     try {
       const baseUrl = Platform.select({
-        web: 'http://demo-expense.geomaticxevs.in/ET-api',
-        default: 'http://demo-expense.geomaticxevs.in/ET-api',
+        web: 'https://demo-expense.geomaticxevs.in/ET-api',
+        default: 'https://demo-expense.geomaticxevs.in/ET-api',
       });
 
       const requestBody = userId
@@ -175,8 +175,8 @@ export default function UserAttendanceScreen() {
 
   const handleTrackUser = (attnId: string) => {
     const baseUrl = Platform.select({
-      web: 'http://localhost:8081',
-      default: 'http://192.168.1.148:8081',
+      web: 'https://demo-expense.geomaticxevs.in/ET-api',
+      default: 'https://demo-expense.geomaticxevs.in/ET-api',
     });
     const url = `${baseUrl}/monitoring.php?attn_id=${attnId}`;
 

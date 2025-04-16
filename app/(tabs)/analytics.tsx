@@ -13,7 +13,7 @@ const CARD_GAP = 12;
 
 const fetchAttendanceData = async (userId: number, startDate: string, endDate: string) => {
   try {
-    const response = await fetch('http://demo-expense.geomaticxevs.in/ET-api/fetch_analytics.php', {
+    const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/fetch_analytics.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

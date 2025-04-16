@@ -184,7 +184,7 @@ export default function AllExpenses() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('http://demo-expense.geomaticxevs.in/ET-api/all-expense.php', {
+      const response = await fetch('https://demo-expense.geomaticxevs.in/ET-api/all-expense.php', {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',

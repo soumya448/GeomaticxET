@@ -135,7 +135,7 @@ export default function AllLeaves() {
       setError(null);
 
       const response = await fetch(
-        "http://demo-expense.geomaticxevs.in/ET-api/all-leaves.php",
+        "https://demo-expense.geomaticxevs.in/ET-api/all-leaves.php",
         {
           headers: {
             Accept: "application/json",
