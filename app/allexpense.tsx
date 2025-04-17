@@ -51,6 +51,7 @@ interface Expense {
   remarks: string | null;
   submitted_to: string | null;
   approved_by: string | null;
+  expense_track_created_by: string; // Add this line
 }
 
 // Update ExpenseBreakage interface
@@ -202,6 +203,33 @@ const ExpenseDetailsModal = ({
     "product" | "bill"
   >("product");
   const [selectedItemNo, setSelectedItemNo] = useState<number>(0);
+  const [cashInHand, setCashInHand] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchCashInHand = async () => {
+      if (!expense) return;
+
+      try {
+        const currentDate = new Date();
+        const formattedDate = `${currentDate.getFullYear()}-${String(
+          currentDate.getMonth() + 1
+        ).padStart(2, "0")}`;
+
+        const response = await fetch(
+          `https://demo-expense.geomaticxevs.in/ET-api/cash_calculator.php?user_id=${expense.expense_track_created_by}&date=${formattedDate}`
+        );
+
+        const data = await response.json();
+        if (data.status === 200) {
+          setCashInHand(data.data.cash_in_hand.cash_in_hand);
+        }
+      } catch (error) {
+        console.error("Error fetching cash in hand:", error);
+      }
+    };
+
+    fetchCashInHand();
+  }, [expense]);
 
   if (!expense) return null;
 
@@ -221,6 +249,17 @@ const ExpenseDetailsModal = ({
                     {expense.employee}
                   </Text>
                   <Text style={styles.detailsId}>ID: {expense.expense_id}</Text>
+                  <View style={styles.cashInHandSection}>
+                    <Text style={styles.cashInHandLabel}>Cash in Hand</Text>
+                    <Text
+                      style={[
+                        styles.cashInHandAmount,
+                        (cashInHand !== null && cashInHand < 0)&& { color: "#ef4444" }, // Red color for negative values
+                      ]}
+                    >
+                      ₹{cashInHand?.toLocaleString() || "0"}
+                    </Text>
+                  </View>
                 </View>
                 <View
                   style={[
@@ -245,6 +284,8 @@ const ExpenseDetailsModal = ({
                   ₹{expense.amount.toFixed(2)}
                 </Text>
               </View>
+
+              <View style={styles.detailsDivider} />
 
               <View style={styles.detailsRow}>
                 <View style={[styles.detailsSection, styles.detailsHalf]}>
@@ -493,6 +534,7 @@ export default function AllExpenses() {
         remarks: item.expense_track_app_rej_remarks,
         submitted_to: item.submitted_to_full_name,
         approved_by: item.approved_rejected_by_full_name,
+        expense_track_created_by: item.expense_track_created_by.toString(), // Add this line
       }));
     },
     [formatDate, getExpenseType, getStatus]
@@ -1141,6 +1183,10 @@ const styles = StyleSheet.create({
   detailsHeaderLeft: {
     flex: 1,
   },
+  headerRightSection: {
+    alignItems: "flex-end",
+    gap: 8,
+  },
   detailsEmployeeName: {
     fontSize: 24,
     fontWeight: "700",
@@ -1338,5 +1384,23 @@ const styles = StyleSheet.create({
   previewImage: {
     width: "100%",
     height: "100%",
+  },
+  cashInHandSection: {
+    backgroundColor: "#dcfce7",
+    padding: 8,
+    borderRadius: 8,
+    alignItems: "flex-start",
+    marginTop: 8,
+    width: 120,
+  },
+  cashInHandLabel: {
+    fontSize: 12,
+    color: "#15803d",
+    fontWeight: "500",
+  },
+  cashInHandAmount: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#15803d",
   },
 });
