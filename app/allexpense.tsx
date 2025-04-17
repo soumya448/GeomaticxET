@@ -36,6 +36,17 @@ interface ApiExpenseResponse {
   created_by_full_name: string;
   submitted_to_full_name: string | null;
   approved_rejected_by_full_name: string | null;
+  expense_details: {
+    expense_id: number;
+    expense_head_title: string;
+    expense_product_desc: string;
+    expense_product_qty: number;
+    expense_product_unit: string;
+    expense_bill_date: string;
+    expense_product_photo_path: string;
+    expense_product_bill_photo_path: string;
+    expense_product_amount: number; // Add this line
+  }[];
 }
 
 // Interface for our transformed expense data
@@ -52,6 +63,17 @@ interface Expense {
   submitted_to: string | null;
   approved_by: string | null;
   expense_track_created_by: string; // Add this line
+  expense_details: {
+    expense_id: number;
+    expense_head_title: string;
+    expense_product_desc: string;
+    expense_product_qty: number;
+    expense_product_unit: string;
+    expense_bill_date: string;
+    expense_product_photo_path: string;
+    expense_product_bill_photo_path: string;
+    expense_product_amount: number; // Add this line
+  }[];
 }
 
 // Update ExpenseBreakage interface
@@ -154,13 +176,17 @@ const ImageViewerModal = ({
   visible,
   onClose,
   imageType,
-  itemNo,
+  imageUrl,
 }: {
   visible: boolean;
   onClose: () => void;
   imageType: "product" | "bill";
-  itemNo: number;
+  imageUrl: string;
 }) => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
+
   return (
     <Modal visible={visible} transparent={true} animationType="fade">
       <View style={styles.imageModalContainer}>
@@ -170,16 +196,23 @@ const ImageViewerModal = ({
               <Text style={styles.backButtonText}>← Back</Text>
             </TouchableOpacity>
             <Text style={styles.imageModalTitle}>
-              {imageType === "product" ? "Product Photo" : "Bill Photo"} - Item
-              #{itemNo}
+              {imageType === "product" ? "Product Photo" : "Bill Photo"}
             </Text>
           </View>
 
           <View style={styles.imageContainer}>
+            {loading && <ActivityIndicator size="large" color="#6366f1" />}
+            {error && <Text style={styles.errorText}>{error}</Text>}
             <Image
-              source={{ uri: "https://picsum.photos/400/600" }} // Dummy image URL
+              source={{ uri: imageUrl }}
               style={styles.previewImage}
               resizeMode="contain"
+              onLoadStart={() => setLoading(true)}
+              onLoadEnd={() => setLoading(false)}
+              onError={() => {
+                setLoading(false);
+                setError("Failed to load image");
+              }}
             />
           </View>
         </View>
@@ -202,8 +235,18 @@ const ExpenseDetailsModal = ({
   const [selectedImageType, setSelectedImageType] = useState<
     "product" | "bill"
   >("product");
-  const [selectedItemNo, setSelectedItemNo] = useState<number>(0);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
   const [cashInHand, setCashInHand] = useState<number | null>(null);
+
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   useEffect(() => {
     const fetchCashInHand = async () => {
@@ -254,7 +297,8 @@ const ExpenseDetailsModal = ({
                     <Text
                       style={[
                         styles.cashInHandAmount,
-                        (cashInHand !== null && cashInHand < 0)&& { color: "#ef4444" }, // Red color for negative values
+                        cashInHand !== null &&
+                          cashInHand < 0 && { color: "#ef4444" }, // Red color for negative values
                       ]}
                     >
                       ₹{cashInHand?.toLocaleString() || "0"}
@@ -370,56 +414,68 @@ const ExpenseDetailsModal = ({
                       </Text>
                     </View>
 
-                    {dummyBreakage.map((item, index) => (
+                    {expense.expense_details.map((item, index) => (
                       <View key={index} style={styles.breakageRow}>
                         <Text style={[styles.breakageText, { width: 50 }]}>
-                          {item.slNo}
+                          {index + 1}
                         </Text>
                         <Text style={[styles.breakageText, { width: 100 }]}>
-                          {item.expenseType}
+                          {item.expense_head_title}
                         </Text>
                         <Text style={[styles.breakageText, { width: 150 }]}>
-                          {item.description}
+                          {item.expense_product_desc}
                         </Text>
                         <Text style={[styles.breakageText, { width: 70 }]}>
-                          {item.quantity}
+                          {item.expense_product_qty}
                         </Text>
                         <Text style={[styles.breakageText, { width: 70 }]}>
-                          {item.unit}
+                          {item.expense_product_unit}
                         </Text>
                         <Text style={[styles.breakageText, { width: 100 }]}>
-                          ₹{item.amount}
+                          ₹{item.expense_product_amount}
                         </Text>
                         <Text style={[styles.breakageText, { width: 100 }]}>
-                          {item.date}
+                          {formatDate(item.expense_bill_date)}
                         </Text>
                         <View style={[styles.photoButtonCell, { width: 100 }]}>
-                          <TouchableOpacity
-                            style={styles.breakagePhotoButton}
-                            onPress={() => {
-                              setSelectedImageType("product");
-                              setSelectedItemNo(item.slNo);
-                              setShowImageViewer(true);
-                            }}
-                          >
-                            <Text style={styles.breakagePhotoButtonText}>
-                              View
-                            </Text>
-                          </TouchableOpacity>
+                          {item.expense_product_photo_path ? (
+                            <TouchableOpacity
+                              style={styles.breakagePhotoButton}
+                              onPress={() => {
+                                setSelectedImageType("product");
+                                setSelectedImageUrl(
+                                  `https://demo-expense.geomaticxevs.in/ET-api/${item.expense_product_photo_path}`
+                                );
+                                setShowImageViewer(true);
+                              }}
+                            >
+                              <Text style={styles.breakagePhotoButtonText}>
+                                View
+                              </Text>
+                            </TouchableOpacity>
+                          ) : (
+                            <Text style={styles.breakageText}>N/A</Text>
+                          )}
                         </View>
                         <View style={[styles.photoButtonCell, { width: 100 }]}>
-                          <TouchableOpacity
-                            style={styles.breakagePhotoButton}
-                            onPress={() => {
-                              setSelectedImageType("bill");
-                              setSelectedItemNo(item.slNo);
-                              setShowImageViewer(true);
-                            }}
-                          >
-                            <Text style={styles.breakagePhotoButtonText}>
-                              View
-                            </Text>
-                          </TouchableOpacity>
+                          {item.expense_product_bill_photo_path ? (
+                            <TouchableOpacity
+                              style={styles.breakagePhotoButton}
+                              onPress={() => {
+                                setSelectedImageType("bill");
+                                setSelectedImageUrl(
+                                  `https://demo-expense.geomaticxevs.in/ET-api/${item.expense_product_bill_photo_path}`
+                                );
+                                setShowImageViewer(true);
+                              }}
+                            >
+                              <Text style={styles.breakagePhotoButtonText}>
+                                View
+                              </Text>
+                            </TouchableOpacity>
+                          ) : (
+                            <Text style={styles.breakageText}>N/A</Text>
+                          )}
                         </View>
                       </View>
                     ))}
@@ -434,7 +490,7 @@ const ExpenseDetailsModal = ({
         visible={showImageViewer}
         onClose={() => setShowImageViewer(false)}
         imageType={selectedImageType}
-        itemNo={selectedItemNo}
+        imageUrl={selectedImageUrl}
       />
     </Modal>
   );
@@ -535,6 +591,7 @@ export default function AllExpenses() {
         submitted_to: item.submitted_to_full_name,
         approved_by: item.approved_rejected_by_full_name,
         expense_track_created_by: item.expense_track_created_by.toString(), // Add this line
+        expense_details: item.expense_details,
       }));
     },
     [formatDate, getExpenseType, getStatus]
