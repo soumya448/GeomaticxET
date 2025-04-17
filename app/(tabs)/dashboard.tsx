@@ -290,6 +290,7 @@ export default function Dashboard() {
       requisition_requests: number;
     };
   } | null>(null);
+  const [roleId, setRoleId] = useState<string | null>(null);
 
   const initialLoadDone = useRef(false);
 
@@ -405,6 +406,9 @@ export default function Dashboard() {
   const fetchUserData = useCallback(async () => {
     try {
       const userId = await AsyncStorage.getItem("userid");
+      const storedRoleId = await AsyncStorage.getItem("roleId");
+      setRoleId(storedRoleId);
+
       if (!userId) {
         setError("No user ID found");
         return;
@@ -782,9 +786,18 @@ export default function Dashboard() {
             <View style={[styles.analyticsCard, styles.cardMyExpense]}>
               <View style={styles.analyticsContent}>
                 <Text style={styles.analyticsLabel}>My Expenses</Text>
-                <Text style={styles.analyticsValue}>
+                <Text
+                  style={[
+                    styles.analyticsValue,
+                    (analytics?.monthly_analytics?.expense ?? 0) < 0 && {
+                      color: "#ef4444",
+                    },
+                  ]}
+                >
                   ₹
-                  {analytics?.monthly_analytics.expense.toLocaleString() || "0"}
+                  {(
+                    analytics?.monthly_analytics?.expense ?? 0
+                  ).toLocaleString()}
                 </Text>
               </View>
               <View
@@ -794,28 +807,51 @@ export default function Dashboard() {
               </View>
             </View>
 
-            <View style={[styles.analyticsCard, styles.cardRequested]}>
-              <View style={styles.analyticsContent}>
-                <Text style={styles.analyticsLabel}>Requested Expenses</Text>
-                <Text style={styles.analyticsValue}>
-                  ₹
-                  {analytics?.monthly_analytics.expense_requests.toLocaleString() ||
-                    "0"}
-                </Text>
+            {!["7", "9", "10", "11", "12", "14"].includes(roleId || "") && (
+              <View style={[styles.analyticsCard, styles.cardRequested]}>
+                <View style={styles.analyticsContent}>
+                  <Text style={styles.analyticsLabel}>Requested Expenses</Text>
+                  <Text
+                    style={[
+                      styles.analyticsValue,
+                      (analytics?.monthly_analytics?.expense_requests ?? 0) <
+                        0 && {
+                        color: "#ef4444",
+                      },
+                    ]}
+                  >
+                    ₹
+                    {(
+                      analytics?.monthly_analytics?.expense_requests ?? 0
+                    ).toLocaleString()}
+                  </Text>
+                </View>
+                <View
+                  style={[
+                    styles.analyticsIcon,
+                    { backgroundColor: "#10b98130" },
+                  ]}
+                >
+                  <Receipt size={24} color="#10b981" />
+                </View>
               </View>
-              <View
-                style={[styles.analyticsIcon, { backgroundColor: "#10b98130" }]}
-              >
-                <Receipt size={24} color="#10b981" />
-              </View>
-            </View>
+            )}
 
             <View style={[styles.analyticsCard, styles.cardCashInHand]}>
               <View style={styles.analyticsContent}>
                 <Text style={styles.analyticsLabel}>Cash in Hand</Text>
-                <Text style={styles.analyticsValue}>
+                <Text
+                  style={[
+                    styles.analyticsValue,
+                    (analytics?.cash_in_hand?.cash_in_hand ?? 0) < 0 && {
+                      color: "#ef4444",
+                    },
+                  ]}
+                >
                   ₹
-                  {analytics?.cash_in_hand.cash_in_hand.toLocaleString() || "0"}
+                  {(
+                    analytics?.cash_in_hand?.cash_in_hand ?? 0
+                  ).toLocaleString()}
                 </Text>
               </View>
               <View
@@ -825,21 +861,37 @@ export default function Dashboard() {
               </View>
             </View>
 
-            <View style={[styles.analyticsCard, styles.cardRequisition]}>
-              <View style={styles.analyticsContent}>
-                <Text style={styles.analyticsLabel}>Requested Requisition</Text>
-                <Text style={styles.analyticsValue}>
-                  ₹
-                  {analytics?.monthly_analytics.requisition_requests.toLocaleString() ||
-                    "0"}
-                </Text>
+            {!["7", "9", "10", "11", "12", "14"].includes(roleId || "") && (
+              <View style={[styles.analyticsCard, styles.cardRequisition]}>
+                <View style={styles.analyticsContent}>
+                  <Text style={styles.analyticsLabel}>
+                    Requested Requisition
+                  </Text>
+                  <Text
+                    style={[
+                      styles.analyticsValue,
+                      (analytics?.monthly_analytics?.requisition_requests ??
+                        0) < 0 && {
+                        color: "#ef4444",
+                      },
+                    ]}
+                  >
+                    ₹
+                    {(
+                      analytics?.monthly_analytics?.requisition_requests ?? 0
+                    ).toLocaleString()}
+                  </Text>
+                </View>
+                <View
+                  style={[
+                    styles.analyticsIcon,
+                    { backgroundColor: "#f59e0b30" },
+                  ]}
+                >
+                  <FileCheck size={24} color="#f59e0b" />
+                </View>
               </View>
-              <View
-                style={[styles.analyticsIcon, { backgroundColor: "#f59e0b30" }]}
-              >
-                <FileCheck size={24} color="#f59e0b" />
-              </View>
-            </View>
+            )}
           </View>
         </View>
 
