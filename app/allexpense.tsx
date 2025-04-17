@@ -202,6 +202,23 @@ const ExpenseDetailsModal = ({
                   </View>
                 </View>
               )}
+
+              {/* Photo Buttons Section */}
+              <View style={styles.photoButtonsContainer}>
+                <TouchableOpacity
+                  style={[styles.photoButton, styles.productPhotoButton]}
+                  onPress={() => console.log("View Product Photo")}
+                >
+                  <Text style={styles.photoButtonText}>View Product Photo</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.photoButton, styles.billPhotoButton]}
+                  onPress={() => console.log("View Bill Photo")}
+                >
+                  <Text style={styles.photoButtonText}>View Bill Photo</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </ScrollView>
         </View>
@@ -1039,5 +1056,33 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     borderRadius: 12,
     overflow: "hidden",
+  },
+  photoButtonsContainer: {
+    flexDirection: "row",
+    gap: 16,
+    marginTop: 20,
+  },
+  photoButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  productPhotoButton: {
+    backgroundColor: "#818cf8", // Indigo shade
+  },
+  billPhotoButton: {
+    backgroundColor: "#6366f1", // Primary indigo
+  },
+  photoButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
