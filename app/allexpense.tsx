@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Modal,
   ScrollView,
+  Image,
 } from "react-native";
 import { Search, Filter, Calendar } from "lucide-react-native";
 import CalendarPicker from "react-native-calendar-picker";
@@ -50,6 +51,19 @@ interface Expense {
   remarks: string | null;
   submitted_to: string | null;
   approved_by: string | null;
+}
+
+// Update ExpenseBreakage interface
+interface ExpenseBreakage {
+  slNo: number;
+  expenseType: string;
+  description: string;
+  quantity: number;
+  unit: string;
+  amount: number;
+  date: string;
+  productPhoto?: string;
+  billPhoto?: string;
 }
 
 // Update DateRangeType to match possible values from admin_analytics.tsx
@@ -103,6 +117,76 @@ const getStatusColor = (status: ExpenseStatus) => {
   }
 };
 
+// Update dummy data
+const dummyBreakage: ExpenseBreakage[] = [
+  {
+    slNo: 1,
+    expenseType: "Travel",
+    description: "Flight Ticket - Delhi to Mumbai",
+    quantity: 1,
+    unit: "Ticket",
+    amount: 12500,
+    date: "2025-04-15",
+  },
+  {
+    slNo: 2,
+    expenseType: "Accommodation",
+    description: "Hotel Stay - Taj Mumbai",
+    quantity: 2,
+    unit: "Nights",
+    amount: 7000,
+    date: "2025-04-16",
+  },
+  {
+    slNo: 3,
+    expenseType: "Transport",
+    description: "Local Cab Service",
+    quantity: 4,
+    unit: "Rides",
+    amount: 2000,
+    date: "2025-04-17",
+  },
+];
+
+// Add this component after the ExpenseBreakage interface
+const ImageViewerModal = ({
+  visible,
+  onClose,
+  imageType,
+  itemNo,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  imageType: "product" | "bill";
+  itemNo: number;
+}) => {
+  return (
+    <Modal visible={visible} transparent={true} animationType="fade">
+      <View style={styles.imageModalContainer}>
+        <View style={styles.imageModalContent}>
+          <View style={styles.imageModalHeader}>
+            <TouchableOpacity style={styles.backButton} onPress={onClose}>
+              <Text style={styles.backButtonText}>← Back</Text>
+            </TouchableOpacity>
+            <Text style={styles.imageModalTitle}>
+              {imageType === "product" ? "Product Photo" : "Bill Photo"} - Item
+              #{itemNo}
+            </Text>
+          </View>
+
+          <View style={styles.imageContainer}>
+            <Image
+              source={{ uri: "https://picsum.photos/400/600" }} // Dummy image URL
+              style={styles.previewImage}
+              resizeMode="contain"
+            />
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
 // Update the ExpenseDetailsModal component
 const ExpenseDetailsModal = ({
   expense,
@@ -113,6 +197,12 @@ const ExpenseDetailsModal = ({
   visible: boolean;
   onClose: () => void;
 }) => {
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [selectedImageType, setSelectedImageType] = useState<
+    "product" | "bill"
+  >("product");
+  const [selectedItemNo, setSelectedItemNo] = useState<number>(0);
+
   if (!expense) return null;
 
   return (
@@ -203,26 +293,108 @@ const ExpenseDetailsModal = ({
                 </View>
               )}
 
-              {/* Photo Buttons Section */}
-              <View style={styles.photoButtonsContainer}>
-                <TouchableOpacity
-                  style={[styles.photoButton, styles.productPhotoButton]}
-                  onPress={() => console.log("View Product Photo")}
-                >
-                  <Text style={styles.photoButtonText}>View Product Photo</Text>
-                </TouchableOpacity>
+              <View style={styles.detailsDivider} />
 
-                <TouchableOpacity
-                  style={[styles.photoButton, styles.billPhotoButton]}
-                  onPress={() => console.log("View Bill Photo")}
-                >
-                  <Text style={styles.photoButtonText}>View Bill Photo</Text>
-                </TouchableOpacity>
+              <View style={styles.breakageSection}>
+                <Text style={styles.detailsLabel}>Expense Breakage</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={styles.breakageTable}>
+                    <View style={styles.breakageHeader}>
+                      <Text style={[styles.breakageHeaderText, { width: 50 }]}>
+                        Sl No
+                      </Text>
+                      <Text style={[styles.breakageHeaderText, { width: 100 }]}>
+                        Type
+                      </Text>
+                      <Text style={[styles.breakageHeaderText, { width: 150 }]}>
+                        Desc.
+                      </Text>
+                      <Text style={[styles.breakageHeaderText, { width: 70 }]}>
+                        Qty
+                      </Text>
+                      <Text style={[styles.breakageHeaderText, { width: 70 }]}>
+                        Unit
+                      </Text>
+                      <Text style={[styles.breakageHeaderText, { width: 100 }]}>
+                        Amount
+                      </Text>
+                      <Text style={[styles.breakageHeaderText, { width: 100 }]}>
+                        Date
+                      </Text>
+                      <Text style={[styles.breakageHeaderText, { width: 100 }]}>
+                        Product
+                      </Text>
+                      <Text style={[styles.breakageHeaderText, { width: 100 }]}>
+                        Bill
+                      </Text>
+                    </View>
+
+                    {dummyBreakage.map((item, index) => (
+                      <View key={index} style={styles.breakageRow}>
+                        <Text style={[styles.breakageText, { width: 50 }]}>
+                          {item.slNo}
+                        </Text>
+                        <Text style={[styles.breakageText, { width: 100 }]}>
+                          {item.expenseType}
+                        </Text>
+                        <Text style={[styles.breakageText, { width: 150 }]}>
+                          {item.description}
+                        </Text>
+                        <Text style={[styles.breakageText, { width: 70 }]}>
+                          {item.quantity}
+                        </Text>
+                        <Text style={[styles.breakageText, { width: 70 }]}>
+                          {item.unit}
+                        </Text>
+                        <Text style={[styles.breakageText, { width: 100 }]}>
+                          ₹{item.amount}
+                        </Text>
+                        <Text style={[styles.breakageText, { width: 100 }]}>
+                          {item.date}
+                        </Text>
+                        <View style={[styles.photoButtonCell, { width: 100 }]}>
+                          <TouchableOpacity
+                            style={styles.breakagePhotoButton}
+                            onPress={() => {
+                              setSelectedImageType("product");
+                              setSelectedItemNo(item.slNo);
+                              setShowImageViewer(true);
+                            }}
+                          >
+                            <Text style={styles.breakagePhotoButtonText}>
+                              View
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                        <View style={[styles.photoButtonCell, { width: 100 }]}>
+                          <TouchableOpacity
+                            style={styles.breakagePhotoButton}
+                            onPress={() => {
+                              setSelectedImageType("bill");
+                              setSelectedItemNo(item.slNo);
+                              setShowImageViewer(true);
+                            }}
+                          >
+                            <Text style={styles.breakagePhotoButtonText}>
+                              View
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                </ScrollView>
               </View>
             </View>
           </ScrollView>
         </View>
       </View>
+      <ImageViewerModal
+        visible={showImageViewer}
+        onClose={() => setShowImageViewer(false)}
+        imageType={selectedImageType}
+        itemNo={selectedItemNo}
+      />
     </Modal>
   );
 };
@@ -1084,5 +1256,87 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  breakageSection: {
+    marginBottom: 20,
+  },
+  breakageTable: {
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    minWidth: "100%",
+  },
+  breakageHeader: {
+    flexDirection: "row",
+    backgroundColor: "#f8fafc",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e2e8f0",
+  },
+  breakageHeaderText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#64748b",
+    paddingHorizontal: 8,
+  },
+  breakageRow: {
+    flexDirection: "row",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e2e8f0",
+    alignItems: "center",
+  },
+  breakageText: {
+    fontSize: 14,
+    color: "#1e293b",
+    paddingHorizontal: 8,
+  },
+  photoButtonCell: {
+    paddingHorizontal: 8,
+    justifyContent: "center",
+  },
+  breakagePhotoButton: {
+    backgroundColor: "#6366f1",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  breakagePhotoButtonText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  imageModalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.9)",
+  },
+  imageModalContent: {
+    flex: 1,
+  },
+  imageModalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  imageModalTitle: {
+    fontSize: 18,
+    color: "#ffffff",
+    fontWeight: "600",
+    marginLeft: 12,
+  },
+  imageContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  previewImage: {
+    width: "100%",
+    height: "100%",
   },
 });
