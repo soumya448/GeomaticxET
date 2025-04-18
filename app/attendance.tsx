@@ -19,7 +19,7 @@ import CalendarPicker from 'react-native-calendar-picker';
 import { format } from 'date-fns';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const API_URL = 'https://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php';
+const API_URL = 'http://demo-expense.geomaticxevs.in/ET-api/attendance_in_range.php';
 
 interface AttendanceData {
   date: string;
@@ -238,6 +238,7 @@ export default function AttendanceTracker() {
       return;
     }
 
+    setFilterStatus(null); // Reset the filter to show all records
     setCurrentMonth(startDate);
     fetchAttendanceData();
   };
@@ -248,11 +249,11 @@ export default function AttendanceTracker() {
     } = {};
 
     attendanceDetails.forEach((attendance) => {
-      let color = '#f59e0b';
+      let color = '#fab541';
       if (attendance.status === 'Present') {
-        color = '#10b981';
+        color = '#3fd1a0';
       } else if (attendance.status === 'Absent') {
-        color = '#ef4444';
+        color = '#f05b5b';
       } else if (attendance.status === 'Holiday') {
         color = '#6b7280';
       }
@@ -313,20 +314,12 @@ export default function AttendanceTracker() {
           styles.scrollContainer,
           { width: containerWidth },
         ]}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={['#6366f1']}
-            tintColor={'#6366f1'}
-          />
-        }
       >
         <View style={styles.formContainer}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Select Date Range</Text>
             <TouchableOpacity onPress={onRefresh} style={styles.refreshButton}>
-              <Icon name="refresh" size={24} color="#6366f1" />
+              <Icon name="refresh" size={24} color="#7275f7" />
             </TouchableOpacity>
           </View>
 
@@ -395,7 +388,6 @@ export default function AttendanceTracker() {
                     selectedDayStyle={{
                       backgroundColor: '#b82828',
                       borderRadius: 10,
-                      // Make it more circular
                     }}
                     selectedRangeStartStyle={{
                       backgroundColor: '#19355e',
@@ -442,7 +434,7 @@ export default function AttendanceTracker() {
 
           {loading && (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#6366f1" />
+              <ActivityIndicator size="large" color="#7275f7" />
             </View>
           )}
 
@@ -451,31 +443,25 @@ export default function AttendanceTracker() {
               <Text style={styles.label}>Filter Attendance :-</Text>
               <View style={styles.buttonGroup}>
                 <TouchableOpacity
-                  style={[styles.statusButton, { backgroundColor: '#10b981' }]}
+                  style={[styles.statusButton, { backgroundColor: '#3fd1a0' }]}
                   onPress={() => handleFilterStatus('Present')}
                 >
                   <Text style={styles.statusButtonText}>Present</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.statusButton, { backgroundColor: '#ef4444' }]}
+                  style={[styles.statusButton, { backgroundColor: '#f05b5b' }]}
                   onPress={() => handleFilterStatus('Absent')}
                 >
                   <Text style={styles.statusButtonText}>Absent</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.statusButton, { backgroundColor: '#6b7280' }]}
-                  onPress={() => handleFilterStatus('Holiday')}
-                >
-                  <Text style={styles.statusButtonText}>Holiday</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.statusButton, { backgroundColor: '#f59e0b' }]}
+                  style={[styles.statusButton, { backgroundColor: '#fab541' }]}
                   onPress={() => handleFilterStatus('Not Logged Out')}
                 >
                   <Text style={styles.statusButtonText}>Not Logged Out</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.statusButton, { backgroundColor: '#6366f1' }]}
+                  style={[styles.statusButton, { backgroundColor: '#7275f7' }]}
                   onPress={() => handleFilterStatus(null)}
                 >
                   <Text style={styles.statusButtonText}>Show All</Text>
@@ -493,13 +479,20 @@ export default function AttendanceTracker() {
                 hideArrows={false}
                 disableArrowLeft={false}
                 disableArrowRight={false}
+                renderArrow={(direction: string) => (
+                  <Icon
+                    name={direction === 'left' ? 'arrow-back' : 'arrow-forward'}
+                    size={24}
+                    color="#7275f7"
+                  />
+                )}
                 style={{ width: containerWidth - 32 }}
                 theme={{
                   calendarBackground: 'white',
-                  selectedDayBackgroundColor: '#6366f1',
+                  selectedDayBackgroundColor: '#7275f7',
                   selectedDayTextColor: 'white',
-                  todayTextColor: '#6366f1',
-                  arrowColor: '#6366f1',
+                  todayTextColor: '#7275f7',
+                  arrowColor: '#7275f7',
                   textDayFontSize: containerWidth < 500 ? 16 : 18,
                   textMonthFontSize: containerWidth < 500 ? 18 : 20,
                   textDayHeaderFontSize: containerWidth < 500 ? 16 : 18,
@@ -552,14 +545,14 @@ export default function AttendanceTracker() {
                     <CountBox
                       value={calculateTotalCounts().presentCount}
                       label="Present"
-                      color="#10b981"
+                      color="#3fd1a0"
                     />
                   )}
                   {filterStatus === 'Absent' && (
                     <CountBox
                       value={calculateTotalCounts().absentCount}
                       label="Absent"
-                      color="#ef4444"
+                      color="#f05b5b"
                     />
                   )}
                   {filterStatus === 'Holiday' && (
@@ -573,7 +566,7 @@ export default function AttendanceTracker() {
                     <CountBox
                       value={calculateTotalCounts().notLoggedOutCount}
                       label="Not Logged Out"
-                      color="#f59e0b"
+                      color="#fab541"
                     />
                   )}
                   {!filterStatus && (
@@ -581,12 +574,12 @@ export default function AttendanceTracker() {
                       <CountBox
                         value={calculateTotalCounts().presentCount}
                         label="Present"
-                        color="#10b981"
+                        color="#3fd1a0"
                       />
                       <CountBox
                         value={calculateTotalCounts().absentCount}
                         label="Absent"
-                        color="#ef4444"
+                        color="#fc6565"
                       />
                       <CountBox
                         value={calculateTotalCounts().holidayCount}
@@ -596,7 +589,7 @@ export default function AttendanceTracker() {
                       <CountBox
                         value={calculateTotalCounts().notLoggedOutCount}
                         label="Not Logged Out"
-                        color="#f59e0b"
+                        color="#fab541"
                       />
                     </>
                   )}
@@ -635,12 +628,13 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   refreshButton: {
-    padding: 8,
+    padding: 10,
     borderRadius: 20,
     backgroundColor: '#f1f5f9',
   },
   filterContainer: {
     marginBottom: 11,
+    
   },
   dateButton: {
     backgroundColor: 'white',
@@ -653,14 +647,17 @@ const styles = StyleSheet.create({
   dateButtonText: {
     color: '#1e293b',
     textAlign: 'center',
-    fontSize: 20,
+    fontSize: 18,
+    
   },
   submitButton: {
-    backgroundColor: '#6366f1',
-    padding: 16,
+    backgroundColor: '#7275f7',
+    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 8,
+
+
   },
   submitText: {
     color: 'white',
@@ -682,8 +679,10 @@ const styles = StyleSheet.create({
   },
   calendarButtonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    padding: 12,
+    width: '80%',
     marginTop: 16,
   },
   clearButton: {
@@ -693,6 +692,8 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 8,
     alignItems: 'center',
+    height: '100%',
+
   },
   clearButtonText: {
     color: '#1e293b',
@@ -715,12 +716,20 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: 0,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 1,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   statusButton: {
     padding: 8,
     borderRadius: 8,
     alignItems: 'center',
-    minWidth: 100,
+    minWidth: 152,
     margin: 2,
   },
   statusButtonText: {
@@ -738,8 +747,8 @@ const styles = StyleSheet.create({
   countContainer: {
     backgroundColor: '#f8fafc',
     borderRadius: 12,
-    padding: 16,
-    marginTop: 16,
+    padding: 8,
+    marginTop: 11,
     width: '100%',
   },
   countInnerContainer: {
@@ -747,13 +756,13 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-around',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   countBox: {
     width: 100,
     height: 80,
     borderRadius: 10,
-    padding: 10,
+    padding: 5,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -770,6 +779,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
     marginBottom: 4,
+    textAlign: 'center',
   },
   countBoxLabel: {
     fontSize: 14,
@@ -803,6 +813,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 200,
+    height: 100,
   },
 });
