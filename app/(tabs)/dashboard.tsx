@@ -837,29 +837,34 @@ export default function Dashboard() {
               </View>
             )}
 
-            <View style={[styles.analyticsCard, styles.cardCashInHand]}>
-              <View style={styles.analyticsContent}>
-                <Text style={styles.analyticsLabel}>Cash in Hand</Text>
-                <Text
+            {roleId !== "8" && (
+              <View style={[styles.analyticsCard, styles.cardCashInHand]}>
+                <View style={styles.analyticsContent}>
+                  <Text style={styles.analyticsLabel}>Cash in Hand</Text>
+                  <Text
+                    style={[
+                      styles.analyticsValue,
+                      (analytics?.cash_in_hand?.cash_in_hand ?? 0) < 0 && {
+                        color: "#ef4444",
+                      },
+                    ]}
+                  >
+                    ₹
+                    {(
+                      analytics?.cash_in_hand?.cash_in_hand ?? 0
+                    ).toLocaleString()}
+                  </Text>
+                </View>
+                <View
                   style={[
-                    styles.analyticsValue,
-                    (analytics?.cash_in_hand?.cash_in_hand ?? 0) < 0 && {
-                      color: "#ef4444",
-                    },
+                    styles.analyticsIcon,
+                    { backgroundColor: "#6366f130" },
                   ]}
                 >
-                  ₹
-                  {(
-                    analytics?.cash_in_hand?.cash_in_hand ?? 0
-                  ).toLocaleString()}
-                </Text>
+                  <ClipboardList size={24} color="#6366f1" />
+                </View>
               </View>
-              <View
-                style={[styles.analyticsIcon, { backgroundColor: "#6366f130" }]}
-              >
-                <ClipboardList size={24} color="#6366f1" />
-              </View>
-            </View>
+            )}
 
             {!["7", "9", "10", "11", "12", "14"].includes(roleId || "") && (
               <View style={[styles.analyticsCard, styles.cardRequisition]}>
